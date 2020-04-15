@@ -12,24 +12,21 @@ class MediaRelease(object):
     def __init__(self, year, n):
         self.mr_year = year
         self.mr_n = n
-        self.title_delim = ('<span class="rss-mr-title" itemprop="headline">','</span>')
-        self.date_delim = ('<time class="rss-mr-date" datetime="','" itemprop="d')
-        self.content_delim = ('<div class="rss-mr-content" itemprop="text">','</div>')
+
+        title_delim = ('<span class="rss-mr-title" itemprop="headline">','</span>')
+        date_delim = ('<time class="rss-mr-date" datetime="','" itemprop="d')
+        content_delim = ('<div class="rss-mr-content" itemprop="text">','</div>')
 
         self.page_text = self.get_mr()
-
-        self.title = self.page_text.split(self.title_delim[0])[1].split(self.title_delim[1])[0]
-        
-        self.interest_rate_decision = self.title[-24:] == 'Monetary Policy Decision'
+        self.title = self.page_text.split(title_delim[0])[1].split(title_delim[1])[0]
+        self.is_mpd = self.title[-24:] == 'Monetary Policy Decision'
 
         # Fetch 'yyyy-mm-dd' str from time element and convert to date.
-        _date = self.page_text.split(self.date_delim[0])[1].split(self.date_delim[1])[0]
-        _date = _date.split('-')
-        self.date = datetime.date(int(_date[0]), int(_date[1]), int(_date[2]))
+        date = self.page_text.split(date_delim[0])[1].split(date_delim[1])[0].split('-')
+        self.date = datetime.date(int(date[0]), int(date[1]), int(date[2]))
 
-        _content = self.page_text.split(self.content_delim[0])[1].split(self.content_delim[1])[0]
-        _content = _content.replace('<p>','').replace('</p>', '\n \n')
-        self.release_content = _content
+        content = self.page_text.split(content_delim[0])[1].split(content_delim[1])[0]
+        self.release_content = content.replace('<p>','').replace('</p>', '\n \n')
 
 
     def get_mr(self):
@@ -52,7 +49,7 @@ class MediaRelease(object):
         for line in page.readlines():
             page_str += line.decode('utf-8')
         
-        page_str = re.sub('\s+', ' ', page_str)
+        page_str = re.sub(r'\s+', ' ', page_str)
         return page_str
 
 
@@ -67,13 +64,13 @@ def get_year_mrs(year):
             return mrs
 
 
-def get_most_recent_mpd_mr(year):
+def get_most_recent_mpd_mr():
+    year = datetime.date.today().year
     mrs = get_year_mrs(year)
     for mr in mrs[::-1]:
-        if mr.interest_rate_decision:
+        if mr.is_mpd:
             return mr
 
 
 if __name__ == "__main__":
-    year = datetime.date.today().year
-    print(get_most_recent_mpd_mr(year).release_content)
+    print(get_most_recent_mpd_mr().release_content)
