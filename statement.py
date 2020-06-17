@@ -6,6 +6,13 @@ from urllib import request
 from urllib import error
 
 
+class Statement(object):
+    title = ""
+    pub_date = ""
+    url = ""
+    description = ""
+    content = ""
+
 class MediaRelease(object):
     """RBA Media Release class"""
 
@@ -49,7 +56,7 @@ class MediaRelease(object):
         for line in page.readlines():
             page_str += line.decode('utf-8')
         
-        page_str = re.sub(r'\s+', ' ', page_str)
+        page_str = re.sub(r'\s+', ' ', page_str) # WTF is this
         return page_str
 
 
